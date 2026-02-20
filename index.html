@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whack A Mole</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    text-align:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+}
+
+h1{
+    margin-top:20px;
+    font-size:32px;
+}
+
+.info{
+    font-size:20px;
+    margin:10px;
+}
+
+.grid{
+    width:360px;
+    margin:25px auto;
+    display:grid;
+    grid-template-columns:repeat(3,120px);
+    gap:12px;
+}
+
+.hole{
+    width:120px;
+    height:120px;
+    background:#334155;
+    border-radius:14px;
+    position:relative;
+    overflow:hidden;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(0,0,0,0.5);
+    transition:transform .15s;
+}
+
+.hole:hover{
+    transform:scale(1.05);
+}
+
+/* MOLE */
+.mole::after{
+    content:"🐹";
+    font-size:55px;
+    position:absolute;
+    bottom:-70px;
+    left:50%;
+    transform:translateX(-50%);
+    animation:pop .25s forwards;
+}
+
+@keyframes pop{
+    from{ bottom:-70px; }
+    to{ bottom:20px; }
+}
+
+button{
+    padding:12px 24px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#22c55e;
+    color:white;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    background:#16a34a;
+}
+button:disabled{
+    background:gray;
+    cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐹 Whack A Mole</h1>
+
+<div class="info">
+Score: <span id="score">0</span> |
+Time: <span id="time">15</span>s
+</div>
+
+<button id="startBtn">Start Game</button>
+
+<div class="grid">
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+<div class="hole"></div>
+</div>
+
+<audio id="hitSound">
+<source src="https://actions.google.com/sounds/v1/cartoon/pop.ogg">
+</audio>
+
+<script>
+const holes = document.querySelectorAll(".hole");
+const scoreDisplay = document.getElementById("score");
+const timeDisplay = document.getElementById("time");
+const startBtn = document.getElementById("startBtn");
+const hitSound = document.getElementById("hitSound");
+
+let score = 0;
+let timeLeft = 15;
+let moleTimer;
+let countdownTimer;
+
+function randomHole(){
+    holes.forEach(h=>h.classList.remove("mole"));
+
+    const index = Math.floor(Math.random()*holes.length);
+    holes[index].classList.add("mole");
+}
+
+holes.forEach(hole=>{
+    hole.addEventListener("click",()=>{
+        if(hole.classList.contains("mole")){
+            score++;
+            scoreDisplay.textContent = score;
+            hole.classList.remove("mole");
+            hitSound.currentTime = 0;
+            hitSound.play();
+        }
+    });
+});
+
+function startGame(){
+    score = 0;
+    timeLeft = 15;
+
+    scoreDisplay.textContent = score;
+    timeDisplay.textContent = timeLeft;
+
+    startBtn.disabled = true;
+
+    moleTimer = setInterval(randomHole,700);
+
+    countdownTimer = setInterval(()=>{
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+
+        if(timeLeft <= 0){
+            endGame();
+        }
+    },1000);
+}
+
+function endGame(){
+    clearInterval(moleTimer);
+    clearInterval(countdownTimer);
+    holes.forEach(h=>h.classList.remove("mole"));
+
+    startBtn.disabled = false;
+
+    setTimeout(()=>{
+        alert("🎉 Game Over! Your score: " + score);
+    },200);
+}
+
+startBtn.addEventListener("click",startGame);
+</script>
+
+</body>
+</html>
